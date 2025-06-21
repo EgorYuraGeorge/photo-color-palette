@@ -5,9 +5,10 @@
 
 ## 📦 Технологии
 
-- HTML5, CSS3, JavaScript
-- Color Thief или Vibrant.js
-- UI от команды (Билал и Саид)
+- HTML5
+- CSS3
+- JavaScript
+- Color Thief
 
 ## 🚀 Старт проекта
 
@@ -27,6 +28,7 @@ git clone https://github.com/EgorYuraGeorge/color-palette-generator.git
 ## 🔮 Планы
 
 - Копирование HEX-кодов
+- Альбом палитр
 - Сохранение палитр
 - Анимации
 
