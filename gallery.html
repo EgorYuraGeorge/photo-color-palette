@@ -3,85 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Галерея изображений</title>
+  <title>Подборка пользователя</title>
   <link rel="stylesheet" href="style/style.css" />
+  <script src="script/main.js" defer></script>
   <style>
+    .empty-message {
+      text-align: center;
+      margin-top: 50px;
+      color: #aaa;
+      font-size: 1.2em;
+    }
     .gallery {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      align-items: center;
-      height: 80vh;
+      gap: 20px;
+      padding: 20px;
     }
-
     .gallery img {
-      max-width: 80vw;
-      max-height: 70vh;
-      border-radius: 20px;
+      width: 270px;
+      height: 400px;
       object-fit: cover;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-      transition: opacity 0.5s ease;
+      border-radius: 20px;
+      cursor: pointer;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <header class="header">
-    <button class="btn-left" onclick="location.href='index.html'">На главную</button>
-    <button class="btn-center" onclick="location.href='editor.html'">Редактировать</button>
-    <button class="btn-right" onclick="alert('В разработке')">
+    <button class="btn-left" onclick="location.href='index.html'">Главная</button>
+    <button class="btn-center" id="btn-upload">Загрузить фотографию</button>
+    <button class="btn-right" id="btn-settings">
       <img src="https://img.icons8.com/ios-filled/50/ffffff/settings.png" alt="Настройки" />
     </button>
   </header>
 
-  <div class="gallery" id="gallery">
-    <img id="displayedImage" src="style/photos/2025-06-16 15.56.51.jpg" alt="Фото" />
-  </div>
+  <input type="file" id="photo-input" accept="image/*" style="display: none;" />
 
-  <footer class="footer">
-    <button id="btn-left" title="Назад">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Назад" />
-    </button>
-    <button id="btn-home" title="Главная" onclick="location.href='index.html'">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/home.png" alt="Домой" />
-    </button>
-    <button id="btn-right" title="Вперёд">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/right.png" alt="Вперёд" />
-    </button>
-  </footer>
+  <main>
+    <div id="gallery" class="gallery"></div>
+    <div id="empty-msg" class="empty-message" style="display: none;">
+      Здесь пока пусто. Нажмите «+», чтобы создать свою палитру!
+    </div>
+  </main>
 
   <script>
-    const imageFilenames = [
-      "2025-06-16 15.56.51.jpg",
-      "2025-06-16 15.57.17.jpg",
-      "2025-06-16 15.57.21.jpg",
-      "2025-06-16 15.57.25.jpg",
-      "2025-06-16 15.57.31.jpg",
-      "2025-06-16 15.57.35.jpg",
-      "2025-06-16 15.57.40.jpg",
-      "2025-06-16 15.57.45.jpg"
-    ];
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.getElementById('gallery');
+      const emptyMsg = document.getElementById('empty-msg');
+      const saved = JSON.parse(localStorage.getItem('savedProjects') || '[]');
 
-    const basePath = "style/photos/";
-    const displayedImage = document.getElementById("displayedImage");
-    let index = 0;
-
-    function updateImage() {
-      displayedImage.style.opacity = 0;
-      setTimeout(() => {
-        displayedImage.src = basePath + imageFilenames[index];
-        displayedImage.style.opacity = 1;
-      }, 200);
-    }
-
-    document.getElementById("btn-left").addEventListener("click", () => {
-      index = (index - 1 + imageFilenames.length) % imageFilenames.length;
-      updateImage();
-    });
-
-    document.getElementById("btn-right").addEventListener("click", () => {
-      index = (index + 1) % imageFilenames.length;
-      updateImage();
+      if (saved.length === 0) {
+        emptyMsg.style.display = 'block';
+      } else {
+        saved.forEach((src, index) => {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = `Сохранённое изображение ${index + 1}`;
+          img.addEventListener('click', () => {
+            localStorage.setItem('photoList', JSON.stringify(saved));
+            localStorage.setItem('photoIndex', index);
+            window.location.href = 'editor.html';
+          });
+          gallery.appendChild(img);
+        });
+      }
     });
   </script>
-  <script src="script/main.js"></script>
 </body>
 </html>
