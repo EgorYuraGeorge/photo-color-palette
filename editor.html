@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Редактор изображения</title>
+  <link rel="stylesheet" href="style/style.css" />
+  <style>
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .image-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    #previewImage {
+      max-width: 80vw;
+      max-height: 70vh;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .magnifier {
+      position: absolute;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      cursor: none;
+      width: 120px;
+      height: 120px;
+      overflow: hidden;
+      display: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .magnifier img {
+      position: absolute;
+      width: auto;
+      height: auto;
+      max-width: none;
+    }
+
+    .color-tooltip {
+      position: absolute;
+      background-color: #000;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      pointer-events: none;
+      transform: translate(-50%, -150%);
+      display: none;
+      z-index: 11;
+    }
+
+    .palette {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .palette div {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+      border: 1px solid #111;
+      position: relative;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .palette div span {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #fff;
+      white-space: nowrap;
+      margin-top: 4px;
+    }
+
+    .btn-export {
+      background-color: #444;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <button class="btn-left" onclick="location.href='index.html'">На главную</button>
+    <button class="btn-center" onclick="location.href='gallery.html'">Подборка</button>
+    <button class="btn-right" onclick="saveProject()">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/save.png" alt="Сохранить" />
+    </button>
+  </header>
+
+  <div class="editor-container">
+    <div class="image-wrapper">
+      <canvas id="canvas" style="display:none;"></canvas>
+      <img id="previewImage" src="" alt="Загруженное изображение" crossorigin="anonymous" />
+      <div class="magnifier" id="magnifier"><img id="zoomImage" src="" /></div>
+      <div class="color-tooltip" id="tooltip">#ffffff</div>
+    </div>
+    <div class="palette" id="palette"></div>
+    <button class="btn-export" onclick="downloadPalette()">Экспортировать палитру</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+  <script>
+    const previewImage = document.getElementById('previewImage');
+    const zoomImage = document.getElementById('zoomImage');
+    const magnifier = document.getElementById('magnifier');
+    const canvas = document.getElementById('canvas');
+    const tooltip = document.getElementById('tooltip');
+    const paletteBox = document.getElementById('palette');
+
+    const imageData = localStorage.getItem('uploadedImage');
+    if (imageData) {
+      previewImage.src = imageData;
+      zoomImage.src = imageData;
+    } else {
+      alert('Изображение не найдено');
+      window.location.href = 'index.html';
+    }
+
+    previewImage.onload = () => {
+      extractPalette();
+    }
+
+    previewImage.addEventListener('mousemove', function(e) {
+      const rect = previewImage.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      canvas.width = previewImage.width;
+      canvas.height = previewImage.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(previewImage, 0, 0, canvas.width, canvas.height);
+
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+      tooltip.textContent = hex;
+      tooltip.style.left = `${e.pageX}px`;
+      tooltip.style.top = `${e.pageY - 20}px`;
+      tooltip.style.display = 'block';
+
+      magnifier.style.display = 'block';
+      const magnifierSize = 120;
+      const zoom = 2;
+      const left = e.pageX - magnifierSize / 2;
+      const top = e.pageY - magnifierSize / 2;
+      magnifier.style.left = `${left}px`;
+      magnifier.style.top = `${top}px`;
+      zoomImage.style.left = `-${x * zoom - magnifierSize / 2}px`;
+      zoomImage.style.top = `-${y * zoom - magnifierSize / 2}px`;
+      zoomImage.style.transform = `scale(${zoom})`;
+    });
+
+    previewImage.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+      magnifier.style.display = 'none';
+    });
+
+    function rgbToHex(r, g, b) {
+      return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function extractPalette() {
+      const colorThief = new ColorThief();
+      if (previewImage.complete) {
+        const palette = colorThief.getPalette(previewImage, 6);
+        paletteBox.innerHTML = '';
+
+        for (let i = 0; i < palette.length; i++) {
+          const color = palette[i];
+          const hex = rgbToHex(...color);
+          const name = await fetchColorName(hex);
+
+          const swatch = document.createElement('div');
+          swatch.style.backgroundColor = hex;
+          swatch.title = hex;
+          swatch.style.animationDelay = `${i * 0.1}s`;
+          swatch.onclick = () => navigator.clipboard.writeText(hex);
+
+          const label = document.createElement('span');
+          label.textContent = name || hex;
+          swatch.appendChild(label);
+          paletteBox.appendChild(swatch);
+        }
+      }
+    }
+
+    async function fetchColorName(hex) {
+      try {
+        const res = await fetch(`https://www.thecolorapi.com/id?hex=${hex.replace('#','')}`);
+        const data = await res.json();
+        return data.name.value;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function downloadPalette() {
+      const colors = Array.from(paletteBox.children).map(el => el.title);
+      const blob = new Blob([colors.join('\n')], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'palette.txt';
+      link.click();
+    }
+
+    function saveProject() {
+      const colors = Array.from(paletteBox.children).map(el => el.title);
+      const image = previewImage.src;
+      const projects = JSON.parse(localStorage.getItem('savedProjects') || '[]');
+      projects.push({ image, colors, date: new Date().toISOString() });
+      localStorage.setItem('savedProjects', JSON.stringify(projects));
+      alert('Проект сохранён!');
+    }
+  </script>
+</body>
+</html>
