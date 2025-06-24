@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Общие элементы для всех страниц
   const photoInput = document.getElementById('photo-input');
   const uploadBtns = document.querySelectorAll('#btn-upload, #upload-btn');
   const btnHome = document.getElementById('btn-home');
@@ -7,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnAdd = document.getElementById('btn-add');
   const btnSettings = document.getElementById('btn-settings');
 
-  // Инициализация загрузки изображений
   function initUpload() {
     uploadBtns.forEach(btn => {
       btn?.addEventListener('click', () => photoInput?.click());
@@ -28,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Инициализация галереи на главной странице
   function initMainGallery() {
     const gallery = document.getElementById('gallery');
     if (!gallery) return;
@@ -42,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Инициализация галереи на странице просмотра
   function initGalleryPage() {
     const displayedImage = document.getElementById('displayedImage');
     if (!displayedImage) return;
@@ -85,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Общие обработчики для всех страниц
   function setupCommonHandlers() {
     btnHome?.addEventListener('click', () => location.href = 'index.html');
     btnCollection?.addEventListener('click', () => location.href = 'gallery.html');
@@ -147,7 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
     alert('Все сохранённые проекты удалены');
   }
 
-  // Инициализация соответствующей функциональности в зависимости от страницы
   initUpload();
   setupCommonHandlers();
 
@@ -159,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initGalleryPage();
   }
 
-  // Применение сохраненной темы
   if (localStorage.getItem('theme') === 'light') {
     document.body.style.backgroundColor = '#eee';
     document.body.style.color = '#000';

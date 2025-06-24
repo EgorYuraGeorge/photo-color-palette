@@ -36,7 +36,6 @@
     const tooltip = document.getElementById('tooltip');
     const paletteBox = document.getElementById('palette');
 
-    // Загрузка изображения из localStorage
     const imageData = localStorage.getItem('uploadedImage');
     if (imageData) {
       previewImage.src = imageData;
@@ -46,7 +45,6 @@
       window.location.href = 'index.html';
     }
 
-    // Инициализация редактора после загрузки изображения
     previewImage.onload = () => {
       extractPalette();
       initColorPicker();

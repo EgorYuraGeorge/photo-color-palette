@@ -1,4 +1,3 @@
-/* Общие стили для всех страниц */
 body {
     display: flex;
     flex-direction: column;
@@ -85,7 +84,6 @@ body {
     transform: scale(1.2);
 }
 
-/* Стили для главной страницы (index.html) */
 .gallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -112,7 +110,6 @@ body {
     transform: scale(1.02);
 }
 
-/* Стили для страницы галереи (gallery.html) */
 .single-image-view {
     display: flex;
     justify-content: center;
@@ -131,7 +128,6 @@ body {
     transition: opacity 0.5s ease;
 }
 
-/* Стили для редактора (editor.html) */
 .editor-container {
     display: flex;
     flex-direction: column;
@@ -241,7 +237,6 @@ body {
     background-color: #555;
 }
 
-/* Анимации */
 @keyframes slideInFromTop {
     0% { opacity: 0; transform: translateY(-50px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -261,7 +256,6 @@ body {
 .gallery img:nth-child(7) { animation-delay: 0.6s; }
 .gallery img:nth-child(8) { animation-delay: 0.7s; }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .gallery {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
